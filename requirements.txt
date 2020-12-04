@@ -1,3 +1,4 @@
 requests
 paramiko
 pyinstaller
+click==7.0.0

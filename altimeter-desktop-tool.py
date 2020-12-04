@@ -4,7 +4,7 @@ import hashlib
 import os
 import re
 import threading
-
+from altimeter_desktop_tool import __version__
 from cli import get_user_target_pi
 from altimeter_desktop_tool.ssh_helpers import MySshClient
 
@@ -318,7 +318,7 @@ class Layout:
         async_stream_stdout(self.pi, cmd, self.on_line)
 class App:
     def __init__(self):
-        self.root = tk.Tk(className='Setup Altimeter')
+        self.root = tk.Tk(className='Setup Altimeter v%s'%(__version__))
         self.layout = Layout(self.root)
         self.root.geometry("300x200")
         # self.root.config(title="Setup Altimeter")
