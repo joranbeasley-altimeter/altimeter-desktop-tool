@@ -46,9 +46,13 @@ jobs:
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: 0.0.test-release
         release_name: Test Release 0
+        body: |
+          Latest Release
 #    - name: Archive production artifacts
 #      uses: actions/upload-artifact@v2
 #      with:
