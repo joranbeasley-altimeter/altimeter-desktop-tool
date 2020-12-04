@@ -1,0 +1,29 @@
+name: Build EXE
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+
+jobs:
+  deploy:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.release.target_commitish }}
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        echo Tag Version: ${GITHUB_REF##*/}
+        echo $(python --version)
+        python -m pip install --upgrade pip
+
