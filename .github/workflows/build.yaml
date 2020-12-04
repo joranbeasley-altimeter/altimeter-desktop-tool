@@ -28,9 +28,9 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
     - name: Build EXE
-        run: |
-          VER=$(python -c "from altimeter_desktop_tool import __version__;print(version)")
-          echo "VER $VER"
-          pyinstaller --onefile altimeter-desktop-tool.py
+      run: |
+        VER=$(python -c "from altimeter_desktop_tool import __version__;print(version)")
+        echo "VER $VER"
+        pyinstaller --onefile altimeter-desktop-tool.py
 
 
