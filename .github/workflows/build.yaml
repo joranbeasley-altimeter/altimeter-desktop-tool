@@ -36,6 +36,7 @@ jobs:
         echo "::set-output name=FNAME::dist/altimeter-desktop-tool-v$ver.exe"
         echo "::set-output name=PKG::altimeter-desktop-tool-v$ver.exe"
         echo "::set-output name=VERSION::$ver"
+        echo "BUILT:dist/altimeter-desktop-tool-v$ver.exe"
     - name: Archive production artifacts
       uses: actions/upload-artifact@v2
       with:
