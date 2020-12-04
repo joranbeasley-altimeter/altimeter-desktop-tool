@@ -34,8 +34,16 @@ jobs:
         echo "VER $ver"
         pyinstaller --onefile -n altimeter-desktop-tool-v$ver altimeter-desktop-tool.py
         echo "::set-output name=FNAME::dist/altimeter-desktop-tool-v$ver.exe"
+        echo "::set-output name=PKG::altimeter-desktop-tool-v$ver.exe"
+        echo "::set-output name=VERSION::$ver"
     - name: Archive production artifacts
       uses: actions/upload-artifact@v2
       with:
         path: |
           ${{ step.build.outputs.FNAME }}
+
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        path: |
+          ${{ steps.build.outputs.FNAME }}
