@@ -29,12 +29,8 @@ jobs:
         python -m pip install -r requirements.txt
     - name: Build EXE
       run: |
-        for /f "tokens=* delims=" %a in (
-          'python -c "from altimeter_desktop_tool import __version__;print(__version__)"'
-        ) do (
-          set VER=%a
-        )
-        echo "VER %VER%"
+        $ver=python -c "from altimeter_desktop_tool import __version__;print(__version__)"
+        echo "VER $ver"
         pyinstaller --onefile altimeter-desktop-tool.py
 
 
