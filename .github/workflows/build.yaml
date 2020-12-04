@@ -40,6 +40,7 @@ jobs:
     - name: Archive production artifacts
       uses: actions/upload-artifact@v2
       with:
+        name: ${{ steps.build.outputs.PKG }}
         path: |
           ${{ steps.build.outputs.FNAME }}
 
