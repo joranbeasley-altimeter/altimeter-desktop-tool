@@ -24,37 +24,33 @@ jobs:
     - name: Install dependencies
       run: |
         echo Tag Version: ${GITHUB_REF##*/}
-        echo $(python --version)
+        echo ${{ github.event.inputs.version }}
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
-    - name: Build EXE
-      id: build
-      run: |
-        $ver=python -c "from altimeter_desktop_tool import __version__;print(__version__)"
-        echo "VER $ver"
-        pyinstaller --onefile -n altimeter-desktop-tool-v$ver altimeter-desktop-tool.py
-        echo "::set-output name=FNAME::dist/altimeter-desktop-tool-v$ver.exe"
-        echo "::set-output name=PKG::altimeter-desktop-tool-v$ver.exe"
-        echo "::set-output name=VERSION::$ver"
-        echo "BUILT:dist/altimeter-desktop-tool-v$ver.exe"
-    - name: Archive production artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: ${{ steps.build.outputs.PKG }}
-        path: |
-          ${{ steps.build.outputs.FNAME }}
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: 0.0.test-release
-        release_name: Test Release 0
-        body: |
-          Latest Release
+#    - name: Build EXE
+#      id: build
+#      run: |
+#        $ver=python -c "from altimeter_desktop_tool import __version__;print(__version__)"
+#        echo "VER $ver"
+#        pyinstaller --onefile -n altimeter-desktop-tool-v$ver altimeter-desktop-tool.py
+#        echo "::set-output name=FNAME::dist/altimeter-desktop-tool-v$ver.exe"
+#        echo "::set-output name=PKG::altimeter-desktop-tool-v$ver.exe"
+#        echo "::set-output name=VERSION::$ver"
+#        echo "BUILT:dist/altimeter-desktop-tool-v$ver.exe"
 #    - name: Archive production artifacts
 #      uses: actions/upload-artifact@v2
 #      with:
+#        name: ${{ steps.build.outputs.PKG }}
 #        path: |
 #          ${{ steps.build.outputs.FNAME }}
+#    - name: Create Release
+#      id: create_release
+#      uses: actions/create-release@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        tag_name: 0.0.test-release
+#        release_name: Test Release 0
+#        body: |
+#          Latest Release
+
