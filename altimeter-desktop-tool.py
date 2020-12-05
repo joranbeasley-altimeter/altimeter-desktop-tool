@@ -5,6 +5,7 @@ import os
 import re
 import threading
 from altimeter_desktop_tool import __version__
+from altimeter_desktop_tool.gui.TextConsole import TextConsole
 from cli import get_user_target_pi
 from altimeter_desktop_tool.ssh_helpers import MySshClient
 
@@ -151,7 +152,7 @@ class Layout:
         # logs_stream_menu.config(state=tk.DISABLED)
         # filemenu.add_command(label="Save", command=donothing)
         # filemenu.add_command(label="Save as...", command=donothing)
-        filemenu.add_command(label="Find PI and Connect", command=lambda:self.search_pi(None))
+        # filemenu.add_command(label="Find PI and Connect", command=lambda:self.search_pi(None))
         filemenu.add_command(label="Close", command=self.root.quit)
 
         self.root.config(menu=self.menu)
@@ -215,9 +216,10 @@ class Layout:
         top2.pack(side=tk.TOP,fill=tk.X)
         # s = "\n".join("initialize-%s"%i for i in range(2))
 
-        self.textWindow = tk.Text(self.root,
-                                   bg="#000000",fg="#FFFFFF") #,state="readonly")
+        self.textWindow = TextConsole(self.root)
+        self.textWindow.bind_command(self.on_user_command)
         self.textWindow.pack(side=tk.BOTTOM,expand=1,fill=tk.BOTH)
+        self.root.after(100,self.search_pi)
 
     def do_run(self):
         print("RUN")
@@ -244,9 +246,18 @@ class Layout:
         print("GOT LINE:",line)
         # def handle_line():
         #     print("thread == "+threading.current_thread().name,"Line:",line)
-        self.textWindow.insert(tk.END,line)
+        self.textWindow.add_text(line)
         self.textWindow.see(tk.END)
-
+    def on_user_command(self,cmd):
+        print("GOT USER CMD:",repr(cmd))
+        if cmd.startswith("cd") and ";" not in cmd:
+            self.textWindow.add_text("[\033[1;33mERROR:\033[0m]] All comands are executed from the $HOME directory")
+        else:
+            async_stream_stdout(self.pi,cmd,self.on_line,self.on_ready)
+    @class_with_root_call_in_main
+    def on_ready(self,*args):
+        self.textWindow.insert(tk.END,"\n")
+        self.textWindow.show_user_prompt()
     @class_with_root_call_in_main
     def on_altimeter_install_state(self,state):
         if state.lower().strip() not in  {b'true','true'}:
@@ -255,9 +266,9 @@ class Layout:
         else:
             self.textWindow.insert(tk.END, "Existing Installation Found\n")
             self.run_btn.config(state=tk.NORMAL,text="UPDATE FROM WEB")
-            async_check_stdout(self.pi,"systemctl status ser-mon altimeter -n 0",self.on_job_state)
             self.logs_submenu.entryconfig("Streaming", state=tk.NORMAL)
             async_check_stdout(self.pi,"ls /logfiles",self.set_downloads_files)
+            async_stream_stdout(self.pi,"systemctl status ser-mon altimeter -n 0",self.on_line,self.on_ready)
             self.logs_submenu.entryconfig("Downloads", state=tk.NORMAL)
             self.menu.entryconfig("Logs",state=tk.NORMAL)
             self.menu.entryconfig("Workers",state=tk.NORMAL)
@@ -274,23 +285,23 @@ class Layout:
         if onDone:
             cb = [self.on_line,onDone]
         async_check_stdout(self.pi, cmd, self.on_line)
-    @class_with_root_call_in_main
-    def on_job_state(self,txt):
-        self.textWindow.insert(tk.END,txt.decode('ascii','ignore'))
+    # @class_with_root_call_in_main
+    # def on_job_state(self,txt):
+    #     self.textWindow.insert(tk.END,txt.decode('ascii','ignore'))
     @class_with_root_call_in_main
     def on_pi_found(self,conn):
         # def updateui():
         print("UPDATE UI:",threading.current_thread())
         if not conn:
             self.findpi.config(state=tk.DISABLED, text="Searching ...")
-            self.textWindow.insert(tk.END, "ERROR NO PI FOUND!!!\n")
+            self.textWindow.insert(tk.END, "\033[1;33m.\033[0m]")
             self.textWindow.see(tk.END)
             return
         self.pi = conn
         ip = conn.getpeername()[0]
         self.findpi.config(state=tk.DISABLED, text="CONNECTED: %s" % ip)
         self.disconnectpi.config(state=tk.NORMAL)
-        self.textWindow.insert(tk.INSERT, "Found: %s\n"%ip)
+        self.textWindow.insert(tk.END, "\nFound: %s\n"%ip)
         self.textWindow.see(tk.END)
         pycmd = "import os;print('python_altimeter_pkg' in os.listdir('/home/pi'));"
         cmd = "python -c \"%s\""%pycmd
@@ -304,7 +315,7 @@ class Layout:
 
     def search_pi(self,*evt):
         self.findpi.config(state=tk.DISABLED, text="Searching ...")
-        self.textWindow.insert(tk.INSERT, "SEARCHING FOR RASPBERRY PY\n")
+        self.textWindow.insert(tk.INSERT, "SEARCHING FOR RASPBERRY PY")
         self.textWindow.see(tk.END)
         async_identify_rpi(self.on_pi_found)
 
@@ -320,7 +331,9 @@ class App:
     def __init__(self):
         self.root = tk.Tk(className='Setup Altimeter v%s'%(__version__))
         self.layout = Layout(self.root)
-        self.root.geometry("300x200")
+        # w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        # self.root.geometry("%dx%d+0+0" % (w, h))
+        self.root.wm_state('zoomed')
         # self.root.config(title="Setup Altimeter")
         self.root.mainloop()
 
